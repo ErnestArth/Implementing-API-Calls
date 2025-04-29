@@ -1,13 +1,16 @@
 package arthur_ws.my_spring_project.service.implementation;
 
 import arthur_ws.my_spring_project.UserRepository;
+import arthur_ws.my_spring_project.entity.AddressEntity;
 import arthur_ws.my_spring_project.entity.UserEntity;
 import arthur_ws.my_spring_project.exceptions.UserServiceException;
 import arthur_ws.my_spring_project.service.UserService;
+import arthur_ws.my_spring_project.shared.dto.AddressDTO;
 import arthur_ws.my_spring_project.shared.dto.UserDto;
 import arthur_ws.my_spring_project.shared.dto.Utilities;
 import arthur_ws.my_spring_project.ui.model.response.ErrorMessages;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,27 +40,28 @@ public class UserServiceImplementation implements UserService {
     @Override
     public UserDto addUser(UserDto user) {
 
-
-        UserEntity userEntity = new UserEntity();
-        BeanUtils.copyProperties(user, userEntity);
-
-        String publicUserId = utilities.generateUserId(50);
-        userEntity.setUserId(publicUserId);
-
-        userEntity.setEncryptedPassword(bCryptPasswordEncoder. encode(user.getPassword()));
-
-
-        userEntity.setEmailVerificationStatus(false);
-
         if (userRepository.findByEmail(user.getEmail()) != null) {
             throw new RuntimeException("User already exists");
         }
 
+        for (int i = 0; i < user.getAddresses().size(); i++) {
+            AddressDTO address = user.getAddresses().get(i);
+            address.setUserDetails(user);
+            address.setAddressId(utilities.generateAddressId(10));
+            user.getAddresses().set(i, address);
+        }
+
+        ModelMapper modelMapper = new ModelMapper();
+       UserEntity userEntity = modelMapper.map(user, UserEntity.class);
+
+        String publicUserId = utilities.generateUserId(50);
+        userEntity.setUserId(publicUserId);
+        userEntity.setEncryptedPassword(bCryptPasswordEncoder. encode(user.getPassword()));
+        userEntity.setEmailVerificationStatus(false);
+
         UserEntity savedUserDetails = userRepository.save(userEntity);
 
-
-        UserDto returnUser = new UserDto();
-        BeanUtils.copyProperties(savedUserDetails, returnUser);
+        UserDto returnUser = modelMapper.map(savedUserDetails, UserDto.class);
 
         return returnUser;
     }

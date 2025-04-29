@@ -8,6 +8,7 @@ import arthur_ws.my_spring_project.ui.model.response.OperationStatusModel;
 import arthur_ws.my_spring_project.ui.model.response.RequestOperationName;
 import arthur_ws.my_spring_project.ui.model.response.RequestOperationStatus;
 import arthur_ws.my_spring_project.ui.model.response.UserRest;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -46,11 +47,15 @@ public class UserController {
 //            throw new NullPointerException("The object is null");
 //        }
 
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userDetails, userDto);
+//        UserDto userDto = new UserDto();
+//        BeanUtils.copyProperties(userDetails, userDto);
+
+        ModelMapper modelMapper = new ModelMapper();
+        UserDto userDto = modelMapper.map(userDetails, UserDto.class);
 
         UserDto addedUser = userService.addUser(userDto);
-        BeanUtils.copyProperties(addedUser, returnUser);
+        returnUser = modelMapper.map(addedUser, UserRest.class);
+//        BeanUtils.copyProperties(addedUser, returnUser);
 
         return returnUser;
     }

@@ -39,7 +39,8 @@ public class WebSecurity {
         authenticationFilter.setFilterProcessesUrl("users/login");
 
         http.csrf((csrf) -> csrf.disable())
-                .authorizeHttpRequests((authz) -> authz.requestMatchers(HttpMethod.POST, SecurityConstants.Sign_Up_URL)
+                .authorizeHttpRequests((authz) -> authz
+                        .requestMatchers(HttpMethod.POST, SecurityConstants.Sign_Up_URL)
                 .permitAll()
                         .requestMatchers(HttpMethod.GET, SecurityConstants.Sign_Up_URL).permitAll()
                         .anyRequest().authenticated())

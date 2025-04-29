@@ -2,6 +2,7 @@ package arthur_ws.my_spring_project.shared.dto;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 public class UserDto implements Serializable {
     @Serial
@@ -15,6 +16,7 @@ public class UserDto implements Serializable {
     private String encryptedPassword;
     private String emailVerificationToken;
     private Boolean emailVerificationStatus;
+    private List<AddressDTO> addresses;
 
     public long getId() {
         return id;
@@ -86,5 +88,13 @@ public class UserDto implements Serializable {
 
     public void setEmailVerificationStatus(Boolean emailVerificationStatus) {
         this.emailVerificationStatus = emailVerificationStatus;
+    }
+
+    public List<AddressDTO> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<AddressDTO> addresses) {
+        this.addresses = addresses;
     }
 }

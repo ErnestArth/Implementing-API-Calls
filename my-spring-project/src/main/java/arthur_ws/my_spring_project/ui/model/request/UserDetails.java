@@ -1,11 +1,14 @@
 package arthur_ws.my_spring_project.ui.model.request;
 
+import java.util.List;
+
 public class UserDetails {
 
     private String firstName;
     private String lastName;
     private String email;
     private String password;
+    private List<AddressRequestModel> addresses;
 
 
 
@@ -39,5 +42,13 @@ public class UserDetails {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<AddressRequestModel> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<AddressRequestModel> addresses) {
+        this.addresses = addresses;
     }
 }
