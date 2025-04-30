@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -45,9 +46,11 @@ public class WebSecurity {
                         .requestMatchers(HttpMethod.GET, SecurityConstants.Sign_Up_URL).permitAll()
                         .anyRequest().authenticated())
                 .authenticationManager(authenticationManager)
-                .addFilter(authenticationFilter)
                 .addFilter(new AuthenticationFilter(authenticationManager))
+                .addFilter(new AuthorizationFilter(authenticationManager))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//                .addFilter(new AuthenticationFilter(authenticationManager))
+//                .addFilterBefore(new AuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
     }

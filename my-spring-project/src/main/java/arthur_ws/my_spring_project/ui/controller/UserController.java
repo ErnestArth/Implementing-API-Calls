@@ -1,19 +1,20 @@
 package arthur_ws.my_spring_project.ui.controller;
 
 
+import arthur_ws.my_spring_project.service.AddressService;
 import arthur_ws.my_spring_project.service.UserService;
+import arthur_ws.my_spring_project.shared.dto.AddressDTO;
 import arthur_ws.my_spring_project.shared.dto.UserDto;
 import arthur_ws.my_spring_project.ui.model.request.UserDetails;
-import arthur_ws.my_spring_project.ui.model.response.OperationStatusModel;
-import arthur_ws.my_spring_project.ui.model.response.RequestOperationName;
-import arthur_ws.my_spring_project.ui.model.response.RequestOperationStatus;
-import arthur_ws.my_spring_project.ui.model.response.UserRest;
+import arthur_ws.my_spring_project.ui.model.response.*;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,9 @@ public class UserController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    AddressService addressService;
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 
@@ -43,19 +47,11 @@ public class UserController {
     public UserRest addUser(@RequestBody UserDetails userDetails) throws Exception {
         UserRest returnUser = new UserRest();
 
-//        if (userDetails.getFirstName() == null || userDetails.getFirstName().isEmpty()) {
-//            throw new NullPointerException("The object is null");
-//        }
-
-//        UserDto userDto = new UserDto();
-//        BeanUtils.copyProperties(userDetails, userDto);
-
         ModelMapper modelMapper = new ModelMapper();
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
 
         UserDto addedUser = userService.addUser(userDto);
         returnUser = modelMapper.map(addedUser, UserRest.class);
-//        BeanUtils.copyProperties(addedUser, returnUser);
 
         return returnUser;
     }
@@ -100,6 +96,22 @@ public class UserController {
             BeanUtils.copyProperties(userDto, userRest);
             returnUser.add(userRest);
         }
+        return returnUser;
+    }
+
+    //http:localhost:8080/my-spring-project/users/userId/addresses
+    @GetMapping(path = "/{id}/addresses", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+
+    public List<AddressesRest> getUserAddress(@PathVariable String id) {
+       List<AddressesRest> returnUser = new ArrayList<>();
+
+        List<AddressDTO> addressesDto = addressService.getAddresses(id);
+
+        if (addressesDto != null && !addressesDto.isEmpty()) {
+            Type listType = new TypeToken<List<String>>() {}.getType();
+            returnUser = new ModelMapper().map(addressesDto, listType);
+        }
+
         return returnUser;
     }
 }

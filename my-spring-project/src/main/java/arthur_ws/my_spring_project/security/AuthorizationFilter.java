@@ -50,21 +50,14 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
 
         String token = authorizationHeader.replace(SecurityConstants.Token_Prefix, "");
 
-        byte[] secretKeyBytes = SecurityConstants.getTokenSecret().getBytes();
+        byte[] secretKeyBytes = Base64.getEncoder().encode(SecurityConstants.getTokenSecret().getBytes());
         SecretKey key = Keys.hmacShaKeyFor(secretKeyBytes);
 
-        JwtParser parser = Jwts.parser().verifyWith(key).build();
+        //method for parsing JWT
+        JwtParser parser = Jwts.parser().setSigningKey(key).build();
 
-        Claims claims = parser.parseClaimsJws(token).getPayload();
-        String subject = (String) claims.get("sub");
-
-//        byte[] secretKeyBytes = Base64.getEncoder().encode(SecurityConstants.Token_Secret.getBytes());
-//        SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
-//
-//        JwtParser jwtParser = Jwts.parser().setSigningKey(secretKey).build();
-//
-//        Jwt<Header, Claims> jwt = (Jwt<Header, Claims>) jwtParser.parse(token);
-//        String subject = jwt.getBody().getSubject();
+        Claims claims = parser.parseClaimsJws(token).getBody(); //correct parsing
+        String subject = claims.getSubject();
 
         if(subject == null) {
             return null;
@@ -73,10 +66,24 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
 
         List<GrantedAuthority> authorities = new ArrayList<>();
         Object rolesObject = claims.get("roles");
+
         if(rolesObject instanceof List<?>) {
-            for (Object role : (List<?>) rolesObject) {
-                authorities.add(new SimpleGrantedAuthority(role.toString()));
+            List<?> rolesList = (List<?>) rolesObject;
+            if (rolesList.isEmpty()) {
+                //assign default role if roles list is empty
+                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
             }
+            else {
+                for (Object role : rolesList) {
+                    authorities.add(new SimpleGrantedAuthority(role.toString()));
+                }
+            }
+
+        }
+
+        else {
+            //assign default role if "roles" claim is missing or not a list
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
         return new UsernamePasswordAuthenticationToken(subject, null, authorities);
     }

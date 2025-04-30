@@ -5,7 +5,7 @@ import org.springframework.core.env.Environment;
 
 public class SecurityConstants {
 
-    public static final long Expiration_Time_In_Seconds = 8640000;    // 10 days
+    public static final long Expiration_Time_In_Seconds = 864000000;    // 10 days
     public static final String Token_Prefix = "Bearer ";
     public static final String Token_Header = "Authorization";
     public static final String Sign_Up_URL = "/users";
