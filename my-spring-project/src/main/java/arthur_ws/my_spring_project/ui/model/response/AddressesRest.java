@@ -1,6 +1,9 @@
 package arthur_ws.my_spring_project.ui.model.response;
 
-public class AddressesRest {
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.transaction.support.ResourceHolderSupport;
+
+public class AddressesRest extends RepresentationModel<AddressesRest> {
     private String addressId;
     private String city;
     private String country;
