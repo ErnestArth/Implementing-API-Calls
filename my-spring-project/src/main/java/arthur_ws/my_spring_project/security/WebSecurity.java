@@ -37,20 +37,23 @@ public class WebSecurity {
 
         //Customize Login URL path
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager);
-        authenticationFilter.setFilterProcessesUrl("users/login");
+        authenticationFilter.setFilterProcessesUrl("/users/login");
 
         http.csrf((csrf) -> csrf.disable())
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers(HttpMethod.POST, SecurityConstants.Sign_Up_URL)
                 .permitAll()
                         .requestMatchers(HttpMethod.GET, SecurityConstants.Sign_Up_URL).permitAll()
+                        .requestMatchers(HttpMethod.POST, SecurityConstants.Verification_Email_URL).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
+
                         .anyRequest().authenticated())
+
+
                 .authenticationManager(authenticationManager)
-                .addFilter(new AuthenticationFilter(authenticationManager))
+                .addFilter(authenticationFilter)
                 .addFilter(new AuthorizationFilter(authenticationManager))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-//                .addFilter(new AuthenticationFilter(authenticationManager))
-//                .addFilterBefore(new AuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
     }

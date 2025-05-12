@@ -33,6 +33,9 @@ public class UserController {
     UserService userService;
 
     @Autowired
+    AddressService addressesService;
+
+    @Autowired
     AddressService addressService;
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -124,8 +127,10 @@ public class UserController {
             }
         }
 
-        Link userLink = WebMvcLinkBuilder.linkTo(UserController.class).slash(id).withRel("user");
-        Link selfLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(id))
+        Link userLink = WebMvcLinkBuilder.linkTo(UserController.class)
+                .slash(id).withRel("user");
+        Link selfLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder
+                        .methodOn(UserController.class).getUserAddresses(id))
                 .withSelfRel();
 
         return CollectionModel.of(returnUser, userLink, selfLink);
@@ -162,6 +167,29 @@ public class UserController {
         //adding links. Entity model
 
         return EntityModel.of(returnUser, userLink, userAddressLink, selfLink);
+    }
+
+    // email verification endpoint
+    //http://localhost:8080/my-spring-project/users/email-verification?token=kmdss
+    @PostMapping(path = "/email-verification", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+
+    public OperationStatusModel verifyEmailToken(@RequestBody String token) {
+
+        System.out.println("Received token: " + token);
+        OperationStatusModel returnUser = new OperationStatusModel();
+        returnUser.setOperationName(RequestOperationName.VERIFY_EMAIL.name());
+
+        boolean isVerified = userService.verifyEmailToken(token);
+
+        if (isVerified) {
+            returnUser.setOperationResult(RequestOperationStatus.SUCCESS.name());
+        }
+        else {
+            returnUser.setOperationResult(RequestOperationStatus.ERROR.name());
+        }
+
+
+        return returnUser;
     }
 }
 
