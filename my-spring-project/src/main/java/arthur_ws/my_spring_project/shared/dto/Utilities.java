@@ -16,6 +16,7 @@ public class Utilities {
 
     private final Random rand = new SecureRandom();
 
+
     public String generateUserId(int length) {
         return generateRandomString(length);
     }
@@ -53,4 +54,15 @@ public class Utilities {
                 .compact();
         return token;
     }
+
+    public static String generatePasswordResetToken(String userId) {
+        String token = Jwts.builder()
+                .setSubject(userId)
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + SecurityConstants.Password_Reset_Expiration_Time_In_Seconds))
+                .signWith(SignatureAlgorithm.HS256, SecurityConstants.getTokenSecret())
+                .compact();
+        return token;
+    }
+
 }

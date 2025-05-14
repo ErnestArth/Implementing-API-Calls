@@ -5,6 +5,7 @@ import arthur_ws.my_spring_project.service.AddressService;
 import arthur_ws.my_spring_project.service.UserService;
 import arthur_ws.my_spring_project.shared.dto.AddressDTO;
 import arthur_ws.my_spring_project.shared.dto.UserDto;
+import arthur_ws.my_spring_project.ui.model.request.PasswordResetRequestModel;
 import arthur_ws.my_spring_project.ui.model.request.UserDetails;
 import arthur_ws.my_spring_project.ui.model.response.*;
 import org.modelmapper.ModelMapper;
@@ -148,29 +149,19 @@ public class UserController {
        //adding links. Representational model
         //http://localhost:8080/users/userId
         Link userLink = WebMvcLinkBuilder.linkTo(UserController.class).slash(userId).withRel("user");
+
         //http://localhost:8080/users/userId/addresses
         Link userAddressLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UserController.class).getUserAddresses(userId))
-//                .slash(userId)
-//                .slash("addresses")
                 .withRel("addresses");
+
         //http://localhost:8080/users/userId/addresses/addressId
         Link selfLink = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UserController.class).getUserAddress(userId, addressId))
-//                .slash(userId)
-//                .slash("addresses")
-//                .slash(addressId)
                 .withSelfRel();
-
-//        returnUser.add(userLink);
-//        returnUser.add(userAddressLink);
-//        returnUser.add(selfLink);
-
-        //adding links. Entity model
-
         return EntityModel.of(returnUser, userLink, userAddressLink, selfLink);
     }
 
     // email verification endpoint
-    //http://localhost:8080/my-spring-project/users/email-verification?token=kmdss
+    //http://localhost:8080/my-spring-project/users/email-verification
     @PostMapping(path = "/email-verification", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 
     public OperationStatusModel verifyEmailToken(@RequestBody String token) {
@@ -182,13 +173,33 @@ public class UserController {
         boolean isVerified = userService.verifyEmailToken(token);
 
         if (isVerified) {
-            returnUser.setOperationResult(RequestOperationStatus.SUCCESS.name());
-        }
-        else {
             returnUser.setOperationResult(RequestOperationStatus.ERROR.name());
         }
+        else {
+            returnUser.setOperationResult(RequestOperationStatus.SUCCESS.name());
+        }
 
 
+        return returnUser;
+    }
+
+
+    //http://localhost:8080/my-spring-project/users/password-reset-request
+    @PostMapping(path = "/password-reset-request",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+
+    public OperationStatusModel requestReset(@RequestBody PasswordResetRequestModel passwordResetRequestModel) {
+        OperationStatusModel returnUser = new OperationStatusModel();
+
+        boolean operationResult = userService.requestPasswordReset(passwordResetRequestModel.getEmail());
+
+        returnUser.setOperationName(RequestOperationName.REQUEST_PASSWORD_RESET.name());
+        returnUser.setOperationResult(RequestOperationStatus.ERROR.name());
+
+        if (operationResult) {
+            returnUser.setOperationResult(RequestOperationStatus.SUCCESS.name());
+        }
         return returnUser;
     }
 }
