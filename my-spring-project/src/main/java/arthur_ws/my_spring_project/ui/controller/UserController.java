@@ -5,6 +5,7 @@ import arthur_ws.my_spring_project.service.AddressService;
 import arthur_ws.my_spring_project.service.UserService;
 import arthur_ws.my_spring_project.shared.dto.AddressDTO;
 import arthur_ws.my_spring_project.shared.dto.UserDto;
+import arthur_ws.my_spring_project.ui.model.request.PasswordResetModel;
 import arthur_ws.my_spring_project.ui.model.request.PasswordResetRequestModel;
 import arthur_ws.my_spring_project.ui.model.request.UserDetails;
 import arthur_ws.my_spring_project.ui.model.response.*;
@@ -199,6 +200,24 @@ public class UserController {
 
         if (operationResult) {
             returnUser.setOperationResult(RequestOperationStatus.SUCCESS.name());
+        }
+        return returnUser;
+    }
+
+    //http://localhost:8080/my-spring-project/users/password-reset
+    @PostMapping(path = "/password-reset", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+
+    public OperationStatusModel resetPassword(@RequestBody PasswordResetModel passwordResetModel) {
+        OperationStatusModel returnUser = new OperationStatusModel();
+
+        boolean operationResult = userService.resetPassword(passwordResetModel.getToken(), passwordResetModel.getPassword());
+
+        returnUser.setOperationName(RequestOperationName.PASSWORD_RESET.name());
+        returnUser.setOperationResult(RequestOperationStatus.ERROR.name());
+
+        if (operationResult) {
+            returnUser.setOperationResult(RequestOperationStatus.SUCCESS.name());
+
         }
         return returnUser;
     }
