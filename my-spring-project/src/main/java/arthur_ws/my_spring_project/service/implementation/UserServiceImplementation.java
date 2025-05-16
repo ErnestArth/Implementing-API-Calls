@@ -48,7 +48,7 @@ public class UserServiceImplementation implements UserService {
     public UserDto addUser(UserDto user) {
 
         if (userRepository.findByEmail(user.getEmail()) != null) {
-            throw new RuntimeException("User already exists");
+            throw new UserServiceException("User already exists");
         }
 
         for (int i = 0; i < user.getAddresses().size(); i++) {
