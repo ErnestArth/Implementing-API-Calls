@@ -1,5 +1,7 @@
 package arthur_ws.my_spring_project.security;
 
+import arthur_ws.my_spring_project.UserRepository;
+import arthur_ws.my_spring_project.entity.UserEntity;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
@@ -22,8 +24,11 @@ import java.util.List;
 
 public class AuthorizationFilter extends BasicAuthenticationFilter {
 
-    public AuthorizationFilter(AuthenticationManager authenticationManager) {
+    private final UserRepository userRepository;
+
+    public AuthorizationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {
         super(authenticationManager);
+        this.userRepository = userRepository;
     }
 
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -58,35 +63,47 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         //method for parsing JWT
         JwtParser parser = Jwts.parser().setSigningKey(key).build();
 
-        Claims claims = parser.parseClaimsJws(token).getBody(); //correct parsing
-        String subject = claims.getSubject();
+        Claims claims = parser
+                .parseClaimsJws(token)   //correct parsing
+                .getBody();
+        String user = claims.getSubject();
 
-        if(subject == null) {
+        if (user == null) {
             return null;
         }
 
+//
+//        List<GrantedAuthority> authorities = new ArrayList<>();
+//        Object rolesObject = claims.get("roles");
+//
+//        if(rolesObject instanceof List<?>) {
+//            List<?> rolesList = (List<?>) rolesObject;
+//            if (rolesList.isEmpty()) {
+//                //assign default role if roles list is empty
+//                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+//            }
+//            else {
+//                for (Object role : rolesList) {
+//                    authorities.add(new SimpleGrantedAuthority(role.toString()));
+//                }
+//            }
+//
+//        }
+//
+//        else {
+//            //assign default role if "roles" claim is missing or not a list
+//            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+//        }
 
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        Object rolesObject = claims.get("roles");
+        if (user != null) {
+            UserEntity userEntity = userRepository.findByEmail(user);
+            UserPrincipal userPrincipal = new UserPrincipal(userEntity);
 
-        if(rolesObject instanceof List<?>) {
-            List<?> rolesList = (List<?>) rolesObject;
-            if (rolesList.isEmpty()) {
-                //assign default role if roles list is empty
-                authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-            }
-            else {
-                for (Object role : rolesList) {
-                    authorities.add(new SimpleGrantedAuthority(role.toString()));
-                }
-            }
-
+            return new UsernamePasswordAuthenticationToken(user, null, userPrincipal.getAuthorities());
         }
 
-        else {
-            //assign default role if "roles" claim is missing or not a list
-            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-        }
-        return new UsernamePasswordAuthenticationToken(subject, null, authorities);
+        return null;
+
     }
+
 }

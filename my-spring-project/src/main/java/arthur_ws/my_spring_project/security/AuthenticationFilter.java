@@ -47,6 +47,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(credentials.getEmail(), credentials.getPassword()));
+//            new UsernamePasswordAuthenticationToken(credentials.getEmail(), credentials.getPassword(), new ArrayList<>()));
         }
 
         catch (IOException e) {
@@ -56,20 +57,21 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain, Authentication auth)
+    protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res, FilterChain chain, Authentication
+            auth)
             throws IOException, ServletException {
 
         byte[] secretKeyBytes = Base64.getEncoder().encode(SecurityConstants.getTokenSecret().getBytes());
         SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
         Instant now = Instant.now();
 
-        User user = (User) auth.getPrincipal();
-        List<String> roles = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+//        User user = (User) auth.getPrincipal();
+//        List<String> roles = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 
-        String userName = user.getUsername();
+        String userName = ((UserPrincipal) auth.getPrincipal()).getUsername();
         String token = Jwts.builder()
                 .setSubject(userName)
-                .claim("roles", roles)
+//                .claim("roles", roles)
                 .setExpiration(
                     Date.from(now.plusMillis(SecurityConstants.Expiration_Time_In_Seconds)))
                 .setIssuedAt(Date.from(now)).signWith(secretKey, SignatureAlgorithm.HS512).compact();
@@ -79,6 +81,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         res.addHeader(SecurityConstants.Token_Header, SecurityConstants.Token_Prefix + token);
         res.addHeader("UserId", userDto.getUserId());
+//        res.addHeader("Content-Type", contentType);
 
     }
 }

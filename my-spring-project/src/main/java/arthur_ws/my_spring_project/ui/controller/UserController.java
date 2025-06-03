@@ -28,7 +28,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
+//@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
@@ -174,10 +175,10 @@ public class UserController {
         boolean isVerified = userService.verifyEmailToken(token);
 
         if (isVerified) {
-            returnUser.setOperationResult(RequestOperationStatus.ERROR.name());
+            returnUser.setOperationResult(RequestOperationStatus.SUCCESS.name());
         }
         else {
-            returnUser.setOperationResult(RequestOperationStatus.SUCCESS.name());
+            returnUser.setOperationResult(RequestOperationStatus.ERROR.name());
         }
 
 

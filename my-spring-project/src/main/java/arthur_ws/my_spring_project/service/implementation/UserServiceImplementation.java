@@ -6,6 +6,7 @@ import arthur_ws.my_spring_project.entity.AddressEntity;
 import arthur_ws.my_spring_project.entity.PasswordResetTokenEntity;
 import arthur_ws.my_spring_project.entity.UserEntity;
 import arthur_ws.my_spring_project.exceptions.UserServiceException;
+import arthur_ws.my_spring_project.security.UserPrincipal;
 import arthur_ws.my_spring_project.service.UserService;
 import arthur_ws.my_spring_project.shared.dto.AddressDTO;
 import arthur_ws.my_spring_project.shared.dto.AmazonSES;
@@ -45,6 +46,7 @@ public class UserServiceImplementation implements UserService {
     PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
+    @Transactional
     public UserDto addUser(UserDto user) {
 
         if (userRepository.findByEmail(user.getEmail()) != null) {
@@ -127,7 +129,7 @@ public class UserServiceImplementation implements UserService {
 
         userEntity.setFirstName(user.getFirstName());
         userEntity.setLastName(user.getLastName());
-        userEntity.setEmail(user.getEmail());
+//        userEntity.setEmail(user.getEmail());
 
         UserEntity savedUserDetails = userRepository.save(userEntity);
         BeanUtils.copyProperties(savedUserDetails, returnUser);
@@ -269,8 +271,10 @@ public class UserServiceImplementation implements UserService {
 
         if (userEntity == null) throw new UsernameNotFoundException(email);
 
-        return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), true,
-                true, true, true, new ArrayList<>());
+        return new UserPrincipal(userEntity);
+
+//        return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), true,
+//                true, true, true, new ArrayList<>());
 
 
 //        return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), userEntity.getEmailVerificationStatus(),

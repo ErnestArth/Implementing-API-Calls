@@ -5,9 +5,16 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Random;
 
@@ -15,6 +22,9 @@ import java.util.Random;
 public class Utilities {
 
     private final Random rand = new SecureRandom();
+
+    @Value("${tokenSecret}")
+    private String tokenSecret;
 
 
     public String generateUserId(int length) {
@@ -36,7 +46,13 @@ public class Utilities {
     }
 
     public static boolean hasTokenExpired(String token) {
-        JwtParser parser = (JwtParser) Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret());
+
+        byte[] secretKeyBytes = Base64.getEncoder().encode(SecurityConstants.getTokenSecret().getBytes());
+        SecretKey secretKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
+
+//        JwtParser parser = (JwtParser) Jwts.parser().setSigningKey(SecurityConstants.getTokenSecret());
+        JwtParser parser =  Jwts.parser().verifyWith(secretKey).build();
+
         Claims claims = parser.parseClaimsJws(token).getBody();
 
         Date tokenExpirationDate = claims.getExpiration();
@@ -50,7 +66,7 @@ public class Utilities {
                 .setSubject(userId)
                 .setExpiration(
                         new Date(System.currentTimeMillis() + SecurityConstants.Expiration_Time_In_Seconds))
-                .signWith(SignatureAlgorithm.HS256, SecurityConstants.getTokenSecret())
+                .signWith(SignatureAlgorithm.HS256, tokenSecret)
                 .compact();
         return token;
     }

@@ -60,7 +60,6 @@ public class UserControllerTest {
         assertEquals(userId, userRest.getUserId());
         assertEquals(userDto.getFirstName(), userRest.getFirstName());
         assertEquals(userDto.getLastName(), userRest.getLastName());
-//        assertEquals(userDto.getAddresses().size(), userRest.getAddresses().size());
     }
 
         private List<AddressDTO> getAddressesDTO() {
